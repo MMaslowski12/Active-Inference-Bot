@@ -1,7 +1,7 @@
 from core.distributions import Normal
 from core.conditional_distributions import ConditionalNormal
 from core.machinas import LinearMachina as Linear, QuadraticMachina as Quadratic
-from Agents.base import Agent
+from agents.base import Agent
 
 class DemoAgent(Agent):
     def __init__(self, machina_type='linear', obs_noise=1.0, **machina_params):
