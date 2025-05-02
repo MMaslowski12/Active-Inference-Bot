@@ -4,14 +4,15 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 class Agent(ABC):
-    def __init__(self):
+    def __init__(self, q_learning_rate=0.1):
         # Distributions to be initialized by subclasses
         self.px = None  # Prior over x
         self.qx = None  # Approximate posterior over x
+        self.transition = None 
         self.py_x = None  # Observation model
         
         # Create optimizers
-        self.q_optimizer = SGD(learning_rate=0.01)  # For q_mu and q_var
+        self.q_optimizer = SGD(learning_rate=q_learning_rate)  # For q_mu and q_var
         self.px_optimizer = SGD(learning_rate=0.01)  # For p(x) mean
         self.py_x_optimizer = SGD(learning_rate=0.01)  # For p(y|x) parameters
     
@@ -35,9 +36,6 @@ class Agent(ABC):
         # Compute gradients
         loss_fn = lambda: self.calculate_vfe(y)
         grads_and_vars = self.q_optimizer.compute_gradients(loss_fn, self.qx)
-        
-        # Print VFE before update
-        print(f"VFE before update: {loss_fn()}")
         
         # Apply gradients
         self.q_optimizer.apply_gradients(grads_and_vars)
@@ -75,3 +73,5 @@ class Agent(ABC):
         
         # Apply gradients
         self.py_x_optimizer.apply_gradients(grads_and_vars)
+    
+

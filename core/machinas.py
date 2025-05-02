@@ -38,11 +38,18 @@ class MatrixMachina(Machina):
         self.A_flat = self.A.flatten()
         self.variables = [f'A_flat[{i}]' for i in range(len(self.A_flat))]
     
-    def __call__(self, x):
-        """Compute y = Ax"""
+    def __call__(self, x, vector_input=False):
+        """Compute y = Ax for the given input x"""
+        # For discrete observations, x should be a one-hot vector
+        if not vector_input:
+            x_onehot = np.zeros(self.A.shape[1])
+            x_onehot[int(x)] = 1.0
+        
         # Reshape A_flat back to matrix before multiplication
         A = self.A_flat.reshape(self.A.shape)
-        return np.dot(A, x)
+        
+        # Return raw matrix multiplication result
+        return np.dot(A, x_onehot)
 
 class MachinaGenerator:
     @staticmethod

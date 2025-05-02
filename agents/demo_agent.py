@@ -4,8 +4,8 @@ from core.machinas import LinearMachina as Linear, QuadraticMachina as Quadratic
 from agents.base import Agent
 
 class DemoAgent(Agent):
-    def __init__(self, machina_type='linear', obs_noise=1.0, **machina_params):
-        super().__init__()
+    def __init__(self, machina_type='linear', obs_noise=1.0, q_learning_rate=0.1, **machina_params):
+        super().__init__(q_learning_rate)
         
         # Initialize distributions
         self.px = Normal(mean=0.0, std=1)  # Prior over x

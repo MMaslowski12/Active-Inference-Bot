@@ -19,10 +19,19 @@ Quadratic:
 - It might make much more sense to set learning rate to 1/2 and then do it twice, or a geometrically decaying learning rate
 - Accuracy is a quartic (it was a quadratic for linear)
 
--Now:
--- Migrate from tensorflow
--- Finish up the cleaning
--- Get to a maze
 
+STAGE 3: MAZE
 
+The issue blows up for multi dimensional data
+- Independence is assumed
+- p(x) and q(x) can be modeled as gaussian if discrete is too hard to compute
+- for calculating accuracy
+-- p(y|x) is also assumed to be normal and then split into different dimensions (?)
+-- Alternatively, you take the mean from g(x) and do single-shot accuracy estimate <- this does not take into account variance, though
+
+- For the current example, it's fine to just go through all of the discrete spaces by flattening.
+
+VFE --> gradient calculation --> q(x) optimization --> future planning --> real-time
+
+4 computationally hard steps, all done in real time. Fortunately, assuming independence and using tensorflow speeds up (1) and (2), while (3) is just a 10/100 loop
 """

@@ -11,9 +11,14 @@ class MazeWorld(World):
         return self._environment.apply(action)
     
     def observe(self):
-        """Return the current observation (position) in the maze"""
-        return self._machina(self._environment.get_state())
+        """Return the current observation (position) in the maze as a single index"""
+        state = self._environment.get_state()
+        return state
     
     def _get_state(self):
         """Return the current state (position) in the maze"""
         return self._environment.get_state() 
+
+    def display(self):
+        """Display the current state of the maze"""
+        self._environment.display()

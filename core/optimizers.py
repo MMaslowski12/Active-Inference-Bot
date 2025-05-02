@@ -1,21 +1,45 @@
 import numpy as np
 
 class SGD:
-    def __init__(self, learning_rate=0.01):
+    def __init__(self, learning_rate=0.1):
         self.learning_rate = learning_rate
     
     def _get_nested_attr(self, obj, attr_path):
-        """Get a nested attribute using dot notation"""
+        """Get a nested attribute using dot notation or array indexing"""
         for attr in attr_path.split('.'):
-            obj = getattr(obj, attr)
+            if '[' in attr and ']' in attr:
+                # Handle array indexing
+                attr_name = attr.split('[')[0]
+                index = int(attr.split('[')[1].split(']')[0])
+                obj = getattr(obj, attr_name)[index]
+            else:
+                obj = getattr(obj, attr)
         return obj
     
     def _set_nested_attr(self, obj, attr_path, value):
-        """Set a nested attribute using dot notation"""
+        """Set a nested attribute using dot notation or array indexing"""
         attrs = attr_path.split('.')
         for attr in attrs[:-1]:
-            obj = getattr(obj, attr)
-        setattr(obj, attrs[-1], value)
+            if '[' in attr and ']' in attr:
+                # Handle array indexing
+                attr_name = attr.split('[')[0]
+                index = int(attr.split('[')[1].split(']')[0])
+                obj = getattr(obj, attr_name)[index]
+            else:
+                obj = getattr(obj, attr)
+        
+        last_attr = attrs[-1]
+        if '[' in last_attr and ']' in last_attr:
+            # Handle array indexing for the last attribute
+            attr_name = last_attr.split('[')[0]
+            index = int(last_attr.split('[')[1].split(']')[0])
+            array = getattr(obj, attr_name)
+            # Ensure we're setting a scalar value
+            if isinstance(value, (list, np.ndarray)):
+                value = value[0] if len(value) > 0 else 0.0
+            array[index] = value
+        else:
+            setattr(obj, last_attr, value)
     
     def apply_gradients(self, grads_and_vars):
         """
@@ -63,12 +87,5 @@ class SGD:
             # Compute central difference gradient
             grad = (loss_plus - loss_minus) / (2 * eps)
             grads_and_vars.append((grad, (distribution, var_idx)))
-            
-            # Print debug info
-            print(f"Variable {var_path}:")
-            print(f"  Original: {original_value}")
-            print(f"  Loss plus: {loss_plus}")
-            print(f"  Loss minus: {loss_minus}")
-            print(f"  Gradient: {grad}")
         
         return grads_and_vars 

@@ -61,7 +61,7 @@ class DiscreteDistribution(Distribution):
         self.n = len(logits)
         self.variables = [f'logits[{i}]' for i in range(self.n)]  # Each logit is independently optimizable
     
-    def _get_probabilities(self):
+    def get_probabilities(self):
         """Convert logits to probabilities using softmax"""
         # Subtract max for numerical stability
         exp_logits = np.exp(self.logits - np.max(self.logits))
@@ -69,13 +69,13 @@ class DiscreteDistribution(Distribution):
     
     def sample(self):
         """Generate a random sample from the discrete distribution"""
-        return np.random.choice(self.n, p=self._get_probabilities())
+        return np.random.choice(self.n, p=self.get_probabilities())
     
     def probability(self, x):
         """Compute the probability of x under this distribution"""
         if not isinstance(x, (int, np.integer)) or x < 0 or x >= self.n:
             return 0.0
-        return self._get_probabilities()[x]
+        return self.get_probabilities()[x]
     
     def kl_divergence(self, other):
         """

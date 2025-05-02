@@ -9,8 +9,8 @@ class MazeGame:
         
         # Constants
         self.TILE_SIZE = 60  # Increased tile size for better visibility
-        self.WINDOW_WIDTH = 800
-        self.WINDOW_HEIGHT = 600
+        self.WINDOW_WIDTH = 1300  # Increased from 1200 to 1300
+        self.WINDOW_HEIGHT = 800  # Increased from 600 to 800
         
         # Colors
         self.WHITE = (255, 255, 255)
@@ -25,6 +25,10 @@ class MazeGame:
         # Set up the display
         self.screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
         pygame.display.set_caption("T-Shaped Maze")
+        
+        # Create background surface
+        self.background = pygame.Surface(self.screen.get_size())
+        self.background.fill(self.GRAY)
         
         # Calculate maze dimensions
         self.maze_width = 3 * self.TILE_SIZE
@@ -61,6 +65,14 @@ class MazeGame:
         # Load font for question mark
         self.font = pygame.font.Font(None, 36)
         
+        # Initialize the static background
+        self._init_static_background()
+        
+    def _init_static_background(self):
+        """Initialize the static background with maze structure"""
+        # Draw maze structure on background
+        self.draw_maze(self.background)
+        
     def update_player_pixel_position(self):
         """Update pixel position based on grid position."""
         # For vertical part (including bottom tile)
@@ -77,54 +89,54 @@ class MazeGame:
         self.snack_x = self.maze_x + self.TILE_SIZE * (self.snack_col + 0.5)
         self.snack_y = self.maze_y + self.TILE_SIZE * 0.5
         
-    def draw_tile(self, x, y):
+    def draw_tile(self, surface, x, y):
         # Draw tile background only
         tile_rect = pygame.Rect(x, y, self.TILE_SIZE, self.TILE_SIZE)
-        pygame.draw.rect(self.screen, self.TILE_COLOR, tile_rect)
+        pygame.draw.rect(surface, self.TILE_COLOR, tile_rect)
         
-    def draw_maze(self):
+    def draw_maze(self, surface):
         # Draw all tile backgrounds first
         # Horizontal part of T (top row)
         for i in range(3):
-            self.draw_tile(self.maze_x + i * self.TILE_SIZE, self.maze_y)
+            self.draw_tile(surface, self.maze_x + i * self.TILE_SIZE, self.maze_y)
         
         # Vertical part of T (middle column)
         for i in range(1, 2):  # Adjusted range for shorter maze
-            self.draw_tile(self.maze_x + self.TILE_SIZE, self.maze_y + i * self.TILE_SIZE)
+            self.draw_tile(surface, self.maze_x + self.TILE_SIZE, self.maze_y + i * self.TILE_SIZE)
         
         # Bottom tile
-        self.draw_tile(self.maze_x + self.TILE_SIZE, 
+        self.draw_tile(surface, self.maze_x + self.TILE_SIZE, 
                       self.maze_y + self.TILE_SIZE * 2)  # Adjusted for shorter maze
         
         # Draw grid lines for the T shape
         # Top horizontal part
-        pygame.draw.line(self.screen, self.DARK_GRAY, 
+        pygame.draw.line(surface, self.DARK_GRAY, 
                         (self.maze_x, self.maze_y), 
                         (self.maze_x + self.maze_width, self.maze_y))
-        pygame.draw.line(self.screen, self.DARK_GRAY, 
+        pygame.draw.line(surface, self.DARK_GRAY, 
                         (self.maze_x, self.maze_y + self.TILE_SIZE), 
                         (self.maze_x + self.maze_width, self.maze_y + self.TILE_SIZE))
         
         # Vertical lines for top part
         for i in range(4):
             x = self.maze_x + i * self.TILE_SIZE
-            pygame.draw.line(self.screen, self.DARK_GRAY,
+            pygame.draw.line(surface, self.DARK_GRAY,
                            (x, self.maze_y),
                            (x, self.maze_y + self.TILE_SIZE))
         
         # Middle and bottom vertical part
         x = self.maze_x + self.TILE_SIZE
-        pygame.draw.line(self.screen, self.DARK_GRAY,
+        pygame.draw.line(surface, self.DARK_GRAY,
                         (x, self.maze_y + self.TILE_SIZE),
                         (x, self.maze_y + self.TILE_SIZE * 3))  # Adjusted for shorter maze
-        pygame.draw.line(self.screen, self.DARK_GRAY,
+        pygame.draw.line(surface, self.DARK_GRAY,
                         (x + self.TILE_SIZE, self.maze_y + self.TILE_SIZE),
                         (x + self.TILE_SIZE, self.maze_y + self.TILE_SIZE * 3))  # Adjusted for shorter maze
         
         # Horizontal lines for vertical part
         for i in range(2, 4):  # Adjusted range for shorter maze
             y = self.maze_y + i * self.TILE_SIZE
-            pygame.draw.line(self.screen, self.DARK_GRAY,
+            pygame.draw.line(surface, self.DARK_GRAY,
                            (x, y),
                            (x + self.TILE_SIZE, y))
         
@@ -209,17 +221,15 @@ class MazeGame:
                 sys.exit()
     
     def display(self):
-        # Fill background with gray
-        self.screen.fill(self.GRAY)
+        # Blit the static background
+        self.screen.blit(self.background, (0, 0))
         
-        # Draw maze and game elements
-        self.draw_maze()
+        # Draw dynamic game elements
         self.draw_question_mark()
         self.draw_snack()
         self.draw_player()
         
-        # Update display
-        pygame.display.flip()
+        # Don't flip display here - let the main loop handle it
     
     def run(self):
         clock = pygame.time.Clock()
@@ -227,6 +237,65 @@ class MazeGame:
             self.update()
             self.display()
             clock.tick(60)  # 60 FPS
+
+    def apply(self, action):
+        """
+        Apply an action to the maze environment.
+        Action should be a tuple of (dx, dy) where:
+        - dx: horizontal movement (-1 for left, 1 for right, 0 for no horizontal movement)
+        - dy: vertical movement (-1 for up, 1 for down, 0 for no vertical movement)
+        Returns: (next_state, reward, done, info)
+        """
+        dx, dy = action
+        
+        # Store current state before move
+        old_state = self.get_state()
+        
+        # Apply the movement
+        self.move_player(dx, dy)
+        
+        # Get new state after move
+        new_state = self.get_state()
+        
+        # Calculate reward (simple reward structure for now)
+        reward = 0
+        if self.snack_visible and self.current_col == self.snack_col and self.current_row == self.snack_row:
+            reward = 1
+            self.snack_visible = False
+        
+        # Game is never done in this simple version
+        done = False
+        
+        return new_state, reward, done, {}
+    
+    def get_state(self):
+        """
+        Returns the current state as a tuple of (player_position, reward_position)
+        where:
+        - player_position: 0-4 (top left, top mid, top right, center, center down)
+        - reward_position: 0-2 (left, right, not known)
+        """
+        # Convert player position to state index
+        if self.current_row == 0:  # Top row
+            if self.current_col == 0:
+                player_state = 0  # top left
+            elif self.current_col == 1:
+                player_state = 1  # top mid
+            else:
+                player_state = 2  # top right
+        elif self.current_row == 1:
+            player_state = 3  # center
+        else:
+            player_state = 4  # center down
+            
+        # Convert reward position to state index
+        if not self.snack_visible:
+            reward_state = 2  # not known
+        else:
+            reward_state = 0 if self.snack_col == 0 else 1  # left or right
+            
+        # Convert to single state index (0-14)
+        return player_state * 3 + reward_state
 
 if __name__ == "__main__":
     game = MazeGame()
