@@ -43,13 +43,14 @@ class MatrixMachina(Machina):
         # For discrete observations, x should be a one-hot vector
         if not vector_input:
             x_onehot = np.zeros(self.A.shape[1])
+            if isinstance(x, (np.ndarray, list)):
+                x = x[0]  # Take the first element if x is an array
             x_onehot[int(x)] = 1.0
+            x = x_onehot
         
         # Reshape A_flat back to matrix before multiplication
         A = self.A_flat.reshape(self.A.shape)
-        
-        # Return raw matrix multiplication result
-        return np.dot(A, x_onehot)
+        return A @ x
 
 class MachinaGenerator:
     @staticmethod

@@ -36,11 +36,11 @@ class Agent(ABC):
         # Compute gradients
         loss_fn = lambda: self.calculate_vfe(y)
         grads_and_vars = self.q_optimizer.compute_gradients(loss_fn, self.qx)
-        
+
         # Apply gradients
         self.q_optimizer.apply_gradients(grads_and_vars)
         
-        # Ensure std stays positive
+        # Ensure std stays positive for Normal distributions
         if hasattr(self.qx, 'std'):
             self.qx.std = max(0.1, self.qx.std)
     

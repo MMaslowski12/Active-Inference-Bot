@@ -1,6 +1,9 @@
 import pygame
 import sys
 import random
+import numpy as np
+from core.distributions import DiscreteDistribution
+from applications.maze.generative_model.mapping import state_to_index
 
 class MazeGame:
     def __init__(self):
@@ -270,10 +273,10 @@ class MazeGame:
     
     def get_state(self):
         """
-        Returns the current state as a tuple of (player_position, reward_position)
-        where:
-        - player_position: 0-4 (top left, top mid, top right, center, center down)
-        - reward_position: 0-2 (left, right, not known)
+        Returns the current state as a DiscreteDistribution over all possible states.
+        When reward is known, it's a delta distribution (probability 1 for the current state).
+        When reward is unknown, it's a uniform distribution over the two possible reward states
+        for the current player position.
         """
         # Convert player position to state index
         if self.current_row == 0:  # Top row
@@ -287,15 +290,11 @@ class MazeGame:
             player_state = 3  # center
         else:
             player_state = 4  # center down
+        
+        # When reward is known, set high logit for the current state
+        reward_state = 0 if self.snack_col == 0 else 1  # left or right
             
-        # Convert reward position to state index
-        if not self.snack_visible:
-            reward_state = 2  # not known
-        else:
-            reward_state = 0 if self.snack_col == 0 else 1  # left or right
-            
-        # Convert to single state index (0-14)
-        return player_state * 3 + reward_state
+        return state_to_index(player_state, reward=reward_state)
 
 if __name__ == "__main__":
     game = MazeGame()

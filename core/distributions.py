@@ -1,6 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 from .machinas import LinearMachina, QuadraticMachina, MachinaGenerator
+EPS=1e-10
 
 class Distribution(ABC):
     @abstractmethod
@@ -25,7 +26,7 @@ class Distribution(ABC):
         kl_estimate = 0.0
         epsilon = 1e-10  # Small constant for numerical stability
         for x in samples:
-            kl_estimate += np.log(self.probability(x) + epsilon) - np.log(other.probability(x) + epsilon)
+            kl_estimate += np.log(self.probability(x) + EPS) - np.log(other.probability(x) + EPS)
         
         return kl_estimate / num_samples
     
@@ -41,12 +42,11 @@ class Distribution(ABC):
         
         # Compute the Monte Carlo estimate
         neg_log_estimate = 0.0
-        epsilon = 1e-10  # Small constant for numerical stability
         for x in x_samples:
             # Get P(y|x) distribution for this x
             p_y_given_x = other(x)
             # Calculate probability of y under P(y|x)
-            neg_log_estimate -= np.log(p_y_given_x.probability(y) + epsilon)
+            neg_log_estimate -= np.log(p_y_given_x.probability(y) + EPS)
         
         return neg_log_estimate / num_samples
 
@@ -63,9 +63,16 @@ class DiscreteDistribution(Distribution):
     
     def get_probabilities(self):
         """Convert logits to probabilities using softmax"""
-        # Subtract max for numerical stability
-        exp_logits = np.exp(self.logits - np.max(self.logits))
-        return exp_logits / np.sum(exp_logits)
+        # Numerically stable softmax that preserves gradients
+        # Subtract max for numerical stability, but store the max value
+        max_logit = np.max(self.logits)
+        # Ensure logits don't get too negative to prevent underflow
+        min_threshold = -100  # exp(-100) is still representable
+        shifted_logits = np.maximum(self.logits - max_logit, min_threshold)
+        exp_logits = np.exp(shifted_logits)
+        probs = exp_logits / np.sum(exp_logits)
+        
+        return probs
     
     def sample(self):
         """Generate a random sample from the discrete distribution"""
@@ -85,22 +92,29 @@ class DiscreteDistribution(Distribution):
         if not isinstance(other, DiscreteDistribution) or other.n != self.n:
             raise ValueError("KL divergence can only be computed between two Discrete distributions of the same size")
         
-        # Compute log probabilities directly from logits
-        log_p = self.logits - np.log(np.sum(np.exp(self.logits)))
-        log_q = other.logits - np.log(np.sum(np.exp(other.logits)))
+        # Get probabilities directly
+        p = self.get_probabilities()
+        q = other.get_probabilities()
         
-        # KL(p||q) = Σ p(x) * (log p(x) - log q(x))
-        return np.sum(np.exp(log_p) * (log_p - log_q))
+        # Add small epsilon to avoid log(0)
+        p = np.clip(p, 1e-10, 1.0)
+        q = np.clip(q, 1e-10, 1.0)
+        
+        # Compute KL divergence directly
+        kl = np.sum(p * (np.log(p) - np.log(q)))
+        
+        return kl
     
-    def negative_expected_log(self, conditional_dist, y, num_samples=None):
+    def negative_expected_log(self, conditional_dist, y):
         """
         Calculate -E_Q(x)[ln P(y|x)] where:
         - self (Q(x)) is a Discrete distribution
         - other(x) returns P(y|x) which is assumed to be a Discrete distribution
         - y is the observed output value
         """
-        # Get log probabilities for Q(x)
-        log_q = self.logits - np.log(np.sum(np.exp(self.logits)))
+        # Get probabilities directly
+        q = self.get_probabilities()
+        q = np.clip(q, 1e-10, 1.0)
         
         neg_log_estimate = 0.0
         for x in range(self.n):
@@ -108,11 +122,12 @@ class DiscreteDistribution(Distribution):
             if not isinstance(p_y_given_x, DiscreteDistribution):
                 raise ValueError("other(x) must return a Discrete distribution")
             
-            # Get log probability of y under P(y|x)
-            log_p_y_given_x = p_y_given_x.logits[y] - np.log(np.sum(np.exp(p_y_given_x.logits)))
+            # Get probability of y under P(y|x)
+            p_y = p_y_given_x.probability(y)
+            p_y = np.clip(p_y, 1e-10, 1.0)
             
             # Add contribution: -Q(x) * log P(y|x)
-            neg_log_estimate -= np.exp(log_q[x]) * log_p_y_given_x
+            neg_log_estimate -= q[x] * np.log(p_y)
         
         return neg_log_estimate
 

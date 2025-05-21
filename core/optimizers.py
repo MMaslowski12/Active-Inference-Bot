@@ -64,28 +64,35 @@ class SGD:
         """
         grads_and_vars = []
         eps = 1e-5
-        
-        # Compute base loss
-        base_loss = loss_fn()
-        
+
         # Compute gradient for each variable
         for var_idx in range(len(distribution.variables)):
             var_path = distribution.variables[var_idx]
             original_value = self._get_nested_attr(distribution, var_path)
+            og_loss = loss_fn()
             
+            # Get original probabilities
+            if hasattr(distribution, 'get_probabilities'):
+                og_probs = distribution.get_probabilities()
+
             # Compute loss with positive perturbation
             self._set_nested_attr(distribution, var_path, original_value + eps)
             loss_plus = loss_fn()
+            if hasattr(distribution, 'get_probabilities'):
+                plus_probs = distribution.get_probabilities()
             
             # Compute loss with negative perturbation
             self._set_nested_attr(distribution, var_path, original_value - eps)
             loss_minus = loss_fn()
+            if hasattr(distribution, 'get_probabilities'):
+                minus_probs = distribution.get_probabilities()
             
             # Restore original value
             self._set_nested_attr(distribution, var_path, original_value)
             
             # Compute central difference gradient
             grad = (loss_plus - loss_minus) / (2 * eps)
+            
             grads_and_vars.append((grad, (distribution, var_idx)))
         
         return grads_and_vars 

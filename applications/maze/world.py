@@ -1,6 +1,9 @@
 from worlds.base import World
 from applications.maze.environment import MazeGame
 
+#same as the generative model, but doesnt have to be
+from applications.maze.generative_model.matrices import determine_observation, get_observation_idx
+
 class MazeWorld(World):
     def __init__(self, environment: MazeGame = None, machina_type='discrete', **machina_params):
         """Initialize the maze world with a maze environment"""
@@ -13,7 +16,9 @@ class MazeWorld(World):
     def observe(self):
         """Return the current observation (position) in the maze as a single index"""
         state = self._environment.get_state()
-        return state
+        player_obs, stimulus = determine_observation(state=state)
+
+        return get_observation_idx(player_obs, stimulus)
     
     def _get_state(self):
         """Return the current state (position) in the maze"""

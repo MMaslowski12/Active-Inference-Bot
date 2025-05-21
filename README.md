@@ -1,86 +1,229 @@
 # Active Inference Bot
 
-A Python implementation of active inference agents in various environments, demonstrating the principles of active inference and free energy minimization.
+A Python implementation of an Active Inference agent navigating a T-shaped maze environment. This project demonstrates the principles of Active Inference, a theoretical framework for understanding brain function and artificial intelligence. I have created this project mostly to understand the core concepts from the Active Inference book, and I am publishing it in case it is useful for anyone else trying to understand the topic.s
 
 ## Overview
 
-This project implements active inference agents that can operate in different environments:
-- A 1D demo world with linear/quadratic functions
-- A 2D maze environment with discrete states
+This project implements Active Inference agents that demonstrate the core principles of the framework:
+1. Maintaining internal models of the environment
+2. Updating beliefs based on observations
+3. Taking actions that minimize expected free energy
+4. Learning from experience through Bayesian updating
 
-The implementation focuses on demonstrating active inference principles, including:
-- Variational Free Energy (VFE) minimization <-- almost done
-- Expected Free Energy (EFE) calculations <-- TODO
-- Bayesian inference in action selection <-- TODO
+## Core Components
+
+### 1. Core Framework
+- `distributions.py`: Implements probability distributions (Discrete and Normal) with methods for sampling, probability calculation, and KL divergence
+- `machinas.py`: Provides linear and quadratic machinas for modeling relationships between variables
+- `optimizers.py`: Contains optimization algorithms for updating the agent's beliefs
+- `conditional_distributions.py`: Implements conditional probability distributions
+
+### 2. Agent Implementation
+- `discrete_agent.py`: Implements a discrete-state Active Inference agent
+- `base.py`: Contains the base Agent class with common functionality
+- The agent uses:
+  - Prior beliefs (px)
+  - Approximate posterior (qx)
+  - Generative model (py_x)
+  - Expected Free Energy calculations
+
+## Active Inference Principles
+
+The implementation follows these key principles:
+
+1. **Generative Model**: The agent maintains a model of how observations depend on hidden states
+2. **Belief Updating**: The agent updates its beliefs about hidden states based on observations
+3. **Expected Free Energy**: Actions are chosen to minimize expected free energy, balancing:
+   - Epistemic value (reducing uncertainty)
+   - Pragmatic value (achieving preferred outcomes)
+
+## Applications
+
+The project includes two distinct applications that demonstrate Active Inference principles in different contexts:
+
+### Application 1. Function Learning Demo
+
+The demo application provides an interactive visualization of Active Inference in a simpler, continuous state space. It demonstrates how an agent learns to model and predict linear or quadratic functions.
+
+#### Key Features
+- Interactive visualization of Variational Free Energy (VFE) and its components
+- Real-time plotting of the agent's generative model vs. the true world model
+- Interactive controls for:
+  - Adjusting the agent's beliefs (q(x))
+  - Learning prior beliefs (p(x))
+  - Learning the generative model (p(y|x))
+  - Exploring different states
+  - Modifying uncertainty (variance)
+
+#### Visualization Components
+
+1. **VFE Analysis Plot**
+   - Shows Variational Free Energy (VFE) as a function of the agent's beliefs
+   - Displays components:
+     - Complexity (red dashed line): KL divergence between q(x) and p(x)
+     - Negative Accuracy (blue dashed line): Expected log likelihood
+     - Total VFE (black line): Sum of complexity and negative accuracy
+   - Vertical lines showing:
+     - Real state (green)
+     - Current belief (orange)
+     - Minimum VFE point (purple)
+     - Prior mean (cyan)
+
+2. **Machina Function Plot**
+   - Compares the agent's learned model with the true world model
+   - Shows:
+     - World function (blue line)
+     - Agent's learned function (red dashed line)
+     - Current state and predictions
+   - Displays the equations for both functions
+
+#### Interactive Controls
+- **State Navigation**: Move between different states
+- **Variance Adjustment**: Modify the agent's uncertainty
+- **Learning Controls**:
+  - Adjust q(x): Update the agent's beliefs
+  - Learn p(x): Update prior beliefs
+  - Learn p(y|x): Update the generative model
+
+#### Why This Matters
+The demo application is particularly valuable because it:
+1. Shows Active Inference in a continuous state space
+2. Visualizes the relationship between beliefs and observations
+3. Demonstrates how the agent learns to model its environment
+4. Makes the mathematical concepts of VFE tangible
+5. Shows how uncertainty affects learning and prediction
+
+### Application 2: Maze Navigation
+
+The maze application demonstrates Active Inference in a discrete state space through a T-shaped maze environment. The agent learns to navigate the maze to find a reward while maintaining and updating its beliefs about the environment.
+
+#### Key Features
+- T-shaped maze with discrete states
+- Question mark tile that reveals reward location
+- Reward placement in either top-left or top-right corner
+- Real-time visualization of agent's beliefs and decision-making
+
+#### Visualization Components
+
+1. **Maze Visualization (Left Panel)**
+   - Shows the T-shaped maze with the agent's current position
+   - Displays the question mark tile that reveals the reward location
+   - Visualizes the reward once discovered
+   - Provides immediate feedback on agent movement and state changes
+
+2. **Belief Visualization (Right Panel)**
+   The right panel displays several key components of Active Inference:
+
+   - **Q(x) Distribution Table**
+     - Shows the agent's current beliefs about its state (approximate posterior)
+     - Color-coded changes: green for increasing probabilities, red for decreasing
+     - Organized by player position and reward location
+     - Demonstrates how the agent updates its beliefs based on observations
+
+   - **P(x) Distribution Table**
+     - Displays the agent's prior beliefs about states
+     - Shows the agent's initial assumptions about the environment
+     - Helps understand how priors influence decision-making
+
+   - **P(y|x) Distribution Table**
+     - Shows the likelihood of observations given states
+     - Demonstrates the agent's generative model
+     - Updates based on current observation (y)
+     - Helps understand how observations influence belief updates
+
+3. **Expected Free Energy (EFE) Analysis**
+   The display includes two modes for analyzing EFE:
+
+   - **Standard Mode**
+     - Shows EFE calculations for single actions (Up, Down, Left, Right)
+     - Displays:
+       - s_pi_t: Predicted future states
+       - entropy: Uncertainty in observations
+       - o_pi_t: Predicted observations
+       - zeta: Difference between predicted and preferred outcomes
+
+   - **Alternative Mode**
+     - Analyzes sequences of actions (up to 4 moves)
+     - Shows how EFE changes with action sequences
+     - Helps understand long-term planning and its impact on free energy
+
+4. **Interactive Controls**
+   - Policy selection buttons for testing different actions
+   - Mode switch between standard and alternative analysis
+   - Real-time updates of all distributions and calculations
+
+#### Why This Matters
+The maze application demonstrates key Active Inference concepts:
+
+1. **Belief Updating**
+   - Real-time visualization of how Q(x) updates based on observations
+   - Shows the Bayesian nature of belief updating
+   - Demonstrates how uncertainty is reduced through experience
+
+2. **Generative Modeling**
+   - P(y|x) table shows how the agent models observations
+   - Demonstrates the relationship between states and observations
+   - Shows how the model learns from experience
+
+3. **Expected Free Energy**
+   - Visualizes how the agent evaluates actions
+   - Shows the balance between exploration (reducing uncertainty) and exploitation (achieving goals)
+   - Demonstrates how the agent plans sequences of actions
+
+4. **Active Learning**
+   - Shows how the agent actively seeks information
+   - Demonstrates the relationship between actions and information gain
+   - Visualizes how the agent balances exploration and exploitation
+
+
+
+## Getting Started
+
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Run either application:
+```bash
+# For maze navigation
+python main.py
+
+# For function learning demo
+python -m applications.demo.main
+```
 
 ## Project Structure
 
 ```
 .
-├── agents/          # Agent implementations
-├── applications/    # Application-specific code
-│   ├── demo/       # 1D demo environment
-│   └── maze/       # 2D maze environment
-├── core/           # Core active inference components
-├── environments/   # Environment implementations
-├── worlds/         # World abstractions
-└── main.py         # Main entry point
+├── agents/             # Agent implementations
+├── applications/       # Specific applications
+│   ├── demo/         # Function learning demo
+│   └── maze/         # Maze navigation
+├── core/              # Core Active Inference framework
+├── environments/      # Environment implementations
+├── worlds/           # World state management
+└── main.py           # Entry point
 ```
 
-## Requirements
+## Dependencies
 
 - Python 3.x
-- Dependencies:
-  - numpy >= 1.24.0
-  - matplotlib >= 3.7.0
-  - tensorflow >= 2.15.0
-  - pygame >= 2.5.0
+- NumPy
+- Pygame
+- Matplotlib (for demo application)
 
-## Installation
+## Future Work
 
-1. Clone the repository:
-```bash
-git clone [repository-url]
-cd Active-Inference-Bot
-```
+- Model more difficult problems
+- Maze:
+-- Better state space (e.g. including information about state visibility to preserve long-term memory)
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+## Contributing
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Usage
+## License
 
-To run the different demos:
-
-1. 1D Demo Environment:
-```bash
-python -m applications.demo.main
-```
-
-2. 2D Maze Environment:
-```bash
-python -m applications.maze.main
-```
-
-## Features
-
-- Implementation of active inference principles
-- Multiple environment types (1D and 2D)
-- Visual representation of agent behavior
-- Configurable agent parameters
-- Modular architecture for easy extension
-
-## Development
-
-The project is structured to allow easy addition of new environments and agent types. Key components:
-
-- `World`: Base class for different environments
-- `Agent`: Base class for different agent implementations
-- `Environment`: Interface for environment-specific implementations
+This project is licensed under the MIT License - see the LICENSE file for details.
