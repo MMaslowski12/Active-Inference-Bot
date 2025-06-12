@@ -10,6 +10,71 @@ This project implements Active Inference agents that demonstrate the core princi
 3. Taking actions that minimize expected free energy
 4. Learning from experience through Bayesian updating
 
+## Screenshots
+
+### Function Learning Demo
+![Function Learning Demo](screenshots/demo.png)
+
+**Function Learning Demo Screenshot Explanation**
+
+This screenshot shows the interface for the Function Learning Demo, where an Active Inference agent learns to model and predict a simple function. The interface is divided into two main plots and a set of interactive controls:
+
+- **VFE and Its Components (Left Plot):**  
+  This plot visualizes the agent's internal calculations as it tries to learn about the world.  
+  - The black curve shows the Variational Free Energy (VFE), a measure the agent tries to minimize to improve its understanding.
+  - The red dashed line is the "complexity" term, representing how much the agent's beliefs differ from its prior expectations.
+  - The blue dashed line is the "negative accuracy," showing how well the agent's beliefs explain what it observes.
+  - Vertical lines and points indicate the real state, the agent's current belief, and where the VFE is minimized.
+
+- **Machina Functions (Right Plot):**  
+  This plot compares the true function of the world (blue line) with the agent's learned model (red line).  
+  - The agent's goal is to make its red line match the blue line as closely as possible.
+  - Dots show the current predictions for a specific input.
+
+- **Interactive Controls (Bottom):**  
+  Buttons allow you to move between states, adjust the agent's beliefs, and trigger learning for different parts of the model.  
+  - For example, you can adjust the agent's belief about the current state, or tell it to learn more about the prior or the generative model.
+
+**For those new to active inference:**  
+The agent is trying to figure out how the world works by constantly updating its beliefs and minimizing its "free energy." The left plot shows how confident the agent is in its beliefs, and the right plot shows how well it has learned the true function. The controls let you experiment with how the agent learns and adapts.
+
+**For those familiar with active inference:**  
+The demo visualizes the decomposition of VFE into complexity and negative accuracy, and shows the agent's belief updating in a continuous state space. The right plot provides a direct comparison between the agent's generative model and the true world model, with real-time feedback as beliefs and parameters are updated.
+
+### Maze Navigation
+![Maze Navigation](screenshots/maze.png)
+
+**Maze Navigation Screenshot Explanation**
+
+This screenshot shows the interface of the Active Inference agent navigating a T-shaped maze. The display is split into several sections:
+
+- **Maze Visualization (Center):**  
+  The T-shaped maze is shown in the middle. The blue circle represents the agent's current position, and the yellow question mark indicates a special tile that reveals information about the reward's location.
+
+- **Belief Tables (Left):**  
+  - **Q(x) Distribution:** Shows the agent's current beliefs about where it might be in the maze and where the reward could be. Higher numbers mean the agent is more confident about being in that state.
+  - **P(x) Distribution:** Represents the agent's prior beliefs before seeing any new information.
+  - **P(y|x) Distribution:** Shows how likely the agent thinks it is to observe certain things (like seeing the reward) in each state.
+
+- **Action and Free Energy Analysis (Top Right):**  
+  The buttons let you choose which direction the agent should move. The "Expected Free Energy (EFE)" value helps the agent decide which action is best, balancing the need to explore (learn more) and exploit (go for the reward).
+
+- **Detailed Calculations (Right):**  
+  These tables break down the agent's predictions and calculations for each possible action, including:
+  - Where it expects to end up (s_pi_t)
+  - How uncertain it is (entropy)
+  - What it expects to observe (o_pi_t)
+  - How good or bad those outcomes are (zeta)
+
+**For those new to active inference:**  
+The agent is constantly updating its beliefs about the maze and making decisions to both learn more about its environment and to find the reward efficiently. The interface visualizes this process in real time, showing how the agent "thinks" and adapts as it moves.
+
+**For those familiar with active inference:**  
+The screenshot illustrates the agent's belief updating (Q(x)), prior (P(x)), and generative model (P(y|x)), as well as the decomposition of expected free energy for each policy. The real-time visualization of these distributions and EFE components provides insight into the agent's epistemic and pragmatic drives during navigation.
+
+**Note**
+The "Alt" button on the top right changes the right panel to an alternative view, which is still in development (its goal will be to show how the Active Inference model thinks over a chain of time steps, not just one step ahead)
+
 ## Core Components
 
 ### 1. Core Framework
@@ -174,8 +239,6 @@ The maze application demonstrates key Active Inference concepts:
    - Shows how the agent actively seeks information
    - Demonstrates the relationship between actions and information gain
    - Visualizes how the agent balances exploration and exploitation
-
-
 
 ## Getting Started
 
