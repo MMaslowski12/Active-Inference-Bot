@@ -13,7 +13,7 @@ This project implements Active Inference agents that demonstrate the core princi
 ## Screenshots
 
 ### Function Learning Demo
-![Function Learning Demo](screenshots/demo.png)
+![Function Learning Demo](docs/demo.png)
 
 **Function Learning Demo Screenshot Explanation**
 
@@ -42,7 +42,7 @@ The agent is trying to figure out how the world works by constantly updating its
 The demo visualizes the decomposition of VFE into complexity and negative accuracy, and shows the agent's belief updating in a continuous state space. The right plot provides a direct comparison between the agent's generative model and the true world model, with real-time feedback as beliefs and parameters are updated.
 
 ### Maze Navigation
-![Maze Navigation](screenshots/maze.png)
+![Maze Navigation](docs/maze.png)
 
 **Maze Navigation Screenshot Explanation**
 
